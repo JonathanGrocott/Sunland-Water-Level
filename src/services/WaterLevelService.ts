@@ -30,7 +30,7 @@ interface UsaceResponse {
 }
 
 class USACEWaterLevelService implements IWaterLevelService {
-    private readonly API_URL = '/api/usace/dd/common/web_service/webexec/getjson';
+    private readonly API_URL = '/api/usace';
     private readonly TIMESERIES_ID = 'WAN.Elev-Forebay.Inst.1Hour.0.CBT-REV';
 
     private async fetchData(days: number = 7): Promise<WaterLevelData[]> {
