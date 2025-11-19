@@ -1,6 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
     // Only allow GET requests
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -15,9 +13,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const usaceUrl = new URL('https://www.nwd-wc.usace.army.mil/dd/common/web_service/webexec/getjson');
-        usaceUrl.searchParams.set('timezone', timezone as string);
-        usaceUrl.searchParams.set('backward', backward as string);
-        usaceUrl.searchParams.set('query', query as string);
+        usaceUrl.searchParams.set('timezone', timezone);
+        usaceUrl.searchParams.set('backward', backward);
+        usaceUrl.searchParams.set('query', query);
 
         // Fetch from USACE API
         const response = await fetch(usaceUrl.toString());
@@ -38,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error('Error proxying USACE API:', error);
         return res.status(500).json({
             error: 'Failed to fetch water level data',
-            message: error instanceof Error ? error.message : 'Unknown error'
+            message: error.message || 'Unknown error'
         });
     }
 }
