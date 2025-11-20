@@ -7,7 +7,7 @@ import { MinMaxRecords } from './components/MinMaxRecords';
 import { waterLevelService } from './services/WaterLevelService';
 import { databaseService } from './services/DatabaseService';
 import type { CurrentCondition, WaterLevelData } from './services/WaterLevelService';
-import type { AllTimeRecords, YearlyStats } from './services/DatabaseService';
+import type { AllTimeRecords, YearlyStats, MonthlyStats } from './services/DatabaseService';
 import { RefreshCw } from 'lucide-react';
 
 function App() {
@@ -17,6 +17,7 @@ function App() {
   const [records, setRecords] = useState<AllTimeRecords | null>(null);
   const [recordsLoading, setRecordsLoading] = useState(true);
   const [yearlyStats, setYearlyStats] = useState<YearlyStats | null>(null);
+  const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -37,12 +38,14 @@ function App() {
   const fetchRecords = async () => {
     setRecordsLoading(true);
     try {
-      const [allTimeRecords, yearlyData] = await Promise.all([
+      const [allTimeRecords, yearlyData, monthlyData] = await Promise.all([
         databaseService.getAllTimeRecords(),
-        databaseService.getYearlyStats()
+        databaseService.getYearlyStats(),
+        databaseService.getMonthlyStats()
       ]);
       setRecords(allTimeRecords);
       setYearlyStats(yearlyData);
+      setMonthlyStats(monthlyData);
     } catch (error) {
       console.error("Failed to fetch records", error);
     } finally {
@@ -70,10 +73,10 @@ function App() {
         </header>
 
         <div className="flex-grow flex flex-col gap-6">
-          <CurrentLevel data={currentCondition} loading={loading} />
+          <CurrentLevel data={currentCondition} loading={loading} monthlyStats={monthlyStats} yearlyStats={yearlyStats} />
 
           {!loading && (
-            <LevelChart data={history} yearlyStats={yearlyStats} />
+            <LevelChart data={history} yearlyStats={yearlyStats} monthlyStats={monthlyStats} />
           )}
 
           <MinMaxRecords records={records} yearlyStats={yearlyStats} loading={recordsLoading} />

@@ -34,6 +34,16 @@ export interface YearlyStats {
     yearly_high_date: string;
 }
 
+export interface MonthlyStats {
+    monthly_low: number;
+    monthly_high: number;
+    monthly_avg: number;
+    monthly_range: number; // high - low
+}
+
+// Time period constants
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
 class DatabaseService {
     private supabase: SupabaseClient | null = null;
 
@@ -135,6 +145,45 @@ class DatabaseService {
             return data || null;
         } catch (error) {
             console.error('Error fetching yearly stats:', error);
+            return null;
+        }
+    }
+
+    async getMonthlyStats(): Promise<MonthlyStats | null> {
+        try {
+            const client = this.getClient();
+
+            // Get last 30 days of daily stats
+            const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS).toISOString().split('T')[0];
+            
+            const { data, error } = await client
+                .from('daily_stats')
+                .select('min_elevation, max_elevation, avg_elevation')
+                .gte('date', thirtyDaysAgo)
+                .order('date', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching monthly stats:', error);
+                return null;
+            }
+
+            if (!data || data.length === 0) {
+                return null;
+            }
+
+            // Calculate monthly statistics from daily data
+            const monthly_low = Math.min(...data.map(d => d.min_elevation));
+            const monthly_high = Math.max(...data.map(d => d.max_elevation));
+            const monthly_avg = data.reduce((sum, d) => sum + d.avg_elevation, 0) / data.length;
+
+            return {
+                monthly_low,
+                monthly_high,
+                monthly_avg,
+                monthly_range: monthly_high - monthly_low
+            };
+        } catch (error) {
+            console.error('Error fetching monthly stats:', error);
             return null;
         }
     }
