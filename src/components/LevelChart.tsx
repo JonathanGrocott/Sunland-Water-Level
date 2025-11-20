@@ -2,24 +2,30 @@ import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format } from 'date-fns';
 import type { WaterLevelData } from '../services/WaterLevelService';
-import type { YearlyStats } from '../services/DatabaseService';
+import type { YearlyStats, MonthlyStats } from '../services/DatabaseService';
 
 interface LevelChartProps {
     data: WaterLevelData[];
     yearlyStats?: YearlyStats | null;
+    monthlyStats?: MonthlyStats | null;
 }
 
-export const LevelChart: React.FC<LevelChartProps> = ({ data, yearlyStats }) => {
+export const LevelChart: React.FC<LevelChartProps> = ({ data, yearlyStats, monthlyStats }) => {
     if (!data || data.length === 0) return null;
 
     const minLevel = Math.min(...data.map(d => d.elevation));
     const maxLevel = Math.max(...data.map(d => d.elevation));
     
-    // Adjust domain to include yearly stats if available
+    // Use monthly stats for better bounds if available, otherwise use yearly stats
     let domainMin = Math.floor(minLevel - 0.5);
     let domainMax = Math.ceil(maxLevel + 0.5);
     
-    if (yearlyStats) {
+    if (monthlyStats) {
+        // Use monthly range with some padding
+        domainMin = Math.min(domainMin, Math.floor(monthlyStats.monthly_low - 0.5));
+        domainMax = Math.max(domainMax, Math.ceil(monthlyStats.monthly_high + 0.5));
+    } else if (yearlyStats) {
+        // Fallback to yearly stats
         domainMin = Math.min(domainMin, Math.floor(yearlyStats.yearly_low - 0.5));
         domainMax = Math.max(domainMax, Math.ceil(yearlyStats.yearly_high + 0.5));
     }
