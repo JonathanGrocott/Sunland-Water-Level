@@ -64,9 +64,14 @@ export const CurrentLevel: React.FC<CurrentLevelProps> = ({ data, loading, month
 
     // Calculate time to reach yearly low if falling
     const getTimeToLow = () => {
-        if (data.trend !== 'falling' || !yearlyStats || data.rateOfChange < MIN_RATE_FOR_PREDICTION) {
-            return null;
-        }
+        // Only calculate if water is falling
+        if (data.trend !== 'falling') return null;
+        
+        // Need yearly stats for comparison
+        if (!yearlyStats) return null;
+        
+        // Rate must be significant enough for meaningful prediction
+        if (data.rateOfChange < MIN_RATE_FOR_PREDICTION) return null;
 
         const distanceToLow = data.currentLevel - yearlyStats.yearly_low;
         if (distanceToLow <= 0) return null;

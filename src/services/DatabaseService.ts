@@ -154,10 +154,12 @@ class DatabaseService {
             const client = this.getClient();
 
             // Get last 30 days of daily stats
+            const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS).toISOString().split('T')[0];
+            
             const { data, error } = await client
                 .from('daily_stats')
                 .select('min_elevation, max_elevation, avg_elevation')
-                .gte('date', new Date(Date.now() - THIRTY_DAYS_MS).toISOString().split('T')[0])
+                .gte('date', thirtyDaysAgo)
                 .order('date', { ascending: false });
 
             if (error) {
