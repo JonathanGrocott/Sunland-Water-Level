@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { SunBackground } from './components/SunBackground';
 import { CurrentLevel } from './components/CurrentLevel';
 import { LevelChart } from './components/LevelChart';
@@ -87,6 +88,8 @@ function App() {
           </p>
         </footer>
       </div>
+
+      <Analytics />
     </main>
   );
 }
