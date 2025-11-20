@@ -4,10 +4,13 @@ import { SunBackground } from './components/SunBackground';
 import { CurrentLevel } from './components/CurrentLevel';
 import { LevelChart } from './components/LevelChart';
 import { MinMaxRecords } from './components/MinMaxRecords';
+import { UpstreamConditions } from './components/UpstreamConditions';
 import { waterLevelService } from './services/WaterLevelService';
 import { databaseService } from './services/DatabaseService';
+import { upstreamFlowService } from './services/UpstreamFlowService';
 import type { CurrentCondition, WaterLevelData } from './services/WaterLevelService';
 import type { AllTimeRecords, YearlyStats, MonthlyStats } from './services/DatabaseService';
+import type { UpstreamData } from './services/UpstreamFlowService';
 import { RefreshCw } from 'lucide-react';
 
 function App() {
@@ -18,20 +21,29 @@ function App() {
   const [recordsLoading, setRecordsLoading] = useState(true);
   const [yearlyStats, setYearlyStats] = useState<YearlyStats | null>(null);
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null);
+  const [upstreamData, setUpstreamData] = useState<UpstreamData | null>(null);
+  const [upstreamLoading, setUpstreamLoading] = useState(true);
 
   const fetchData = async () => {
     setLoading(true);
+    setUpstreamLoading(true);
     try {
-      const [cond, hist] = await Promise.all([
+      const [cond, hist, upstream] = await Promise.all([
         waterLevelService.getCurrentCondition(),
-        waterLevelService.getHistory()
+        waterLevelService.getHistory(),
+        upstreamFlowService.getUpstreamData().catch(err => {
+          console.error('Failed to fetch upstream data:', err);
+          return null;
+        })
       ]);
       setCurrentCondition(cond);
       setHistory(hist);
+      setUpstreamData(upstream);
     } catch (error) {
       console.error("Failed to fetch data", error);
     } finally {
       setLoading(false);
+      setUpstreamLoading(false);
     }
   };
 
@@ -74,6 +86,8 @@ function App() {
 
         <div className="flex-grow flex flex-col gap-6">
           <CurrentLevel data={currentCondition} loading={loading} monthlyStats={monthlyStats} yearlyStats={yearlyStats} />
+
+          <UpstreamConditions data={upstreamData} loading={upstreamLoading} />
 
           {!loading && (
             <LevelChart data={history} yearlyStats={yearlyStats} monthlyStats={monthlyStats} />

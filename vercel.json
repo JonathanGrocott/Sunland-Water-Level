@@ -11,6 +11,10 @@
         {
             "path": "/api/store-reading",
             "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/store-upstream-flows",
+            "schedule": "0 * * * *"
         }
     ]
 }

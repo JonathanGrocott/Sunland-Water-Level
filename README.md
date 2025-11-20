@@ -8,6 +8,9 @@ A beautiful, real-time water level tracker for the Columbia River at Sunland (Wa
 ## Features
 
 - 🌊 **Real-Time Water Levels** - Live data from USACE Dataquery API
+- 🔮 **6-Hour Predictions** - Forecast rising/falling trends based on upstream conditions
+- ⬆️ **Upstream Flow Monitoring** - Track releases from Chief Joseph & Grand Coulee Dams
+- ⚖️ **Flow Balance Analysis** - Compare Wanapum inflow vs outflow for accurate predictions
 - 📈 **24-Hour Trend Chart** - Visual representation of water level changes with historical reference bands
 - 📊 **Yearly Statistics** - Rolling 365-day high, low, and average water levels
 - 🎯 **Visual Reference Bands** - Chart overlays showing yearly high, low, and average for context
@@ -16,6 +19,7 @@ A beautiful, real-time water level tracker for the Columbia River at Sunland (Wa
 - 🌅 **Beautiful Sun Theme** - Stunning gradient background with animations
 - 📱 **Mobile Responsive** - Perfect on any device
 - ♻️ **Auto-Refresh** - Updates every 5 minutes
+
 
 ## Live Demo
 
@@ -74,38 +78,65 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Serverless function proxies requests to USACE API
    - Data updates every 5 minutes automatically
 
-2. **Historical Records**:
+2. **Upstream Flow Monitoring** (NEW):
+   - Frontend fetches upstream dam data from `/api/upstream-dams`
+   - Tracks Chief Joseph Dam (15 mi upstream) and Grand Coulee Dam (100 mi upstream)
+   - Compares Wanapum inflow vs outflow to predict level changes
+   - Provides 6-hour outlook: Rising/Falling/Stable
+   - Updates every 5 minutes with current water level data
+
+3. **Prediction Algorithm**:
+   - Calculates net flow: `inflow - outflow` at Wanapum Dam
+   - Converts to rate of change: `(net flow × 3600) / reservoir surface area`
+   - Predicts direction based on flow balance and upstream trends
+   - Shows estimated level change over next 6-12 hours
+   - Displays confidence level based on data quality
+
+4. **Historical Records**:
    - Cron job runs daily at midnight UTC
    - Fetches last 24h of data and calculates min/max/avg
    - Stores in Supabase `daily_stats` table
    - Frontend displays all-time high/low records
    
-3. **Yearly Statistics**:
+5. **Upstream Flow Storage**:
+   - Cron job runs every hour
+   - Collects flow data from upstream dams
+   - Stores in Supabase `upstream_flows` table
+   - Builds dataset for future pattern analysis (Phase 2)
+
+6. **Yearly Statistics**:
    - `yearly_stats` view calculates rolling 365-day statistics
    - Automatically updates as new daily data is added
    - Provides context through visual reference bands on charts
    - Shows yearly high, low, average, and range
+
 
 ### File Structure
 
 ```
 Sunland-Water-Level/
 ├── api/                    # Vercel serverless functions
-│   ├── usace.ts           # Proxy for USACE API
-│   └── store-reading.ts   # Daily data collection cron
+│   ├── usace.js           # Proxy for USACE API
+│   ├── store-reading.js   # Daily data collection cron
+│   ├── upstream-dams.js   # Upstream flow data API (NEW)
+│   └── store-upstream-flows.js  # Hourly upstream flow collection (NEW)
 ├── src/
 │   ├── components/        # React components
 │   │   ├── SunBackground.tsx
 │   │   ├── CurrentLevel.tsx
 │   │   ├── LevelChart.tsx
-│   │   └── MinMaxRecords.tsx
+│   │   ├── MinMaxRecords.tsx
+│   │   └── UpstreamConditions.tsx  # Upstream flow display (NEW)
 │   ├── services/          # Service layer
 │   │   ├── WaterLevelService.ts
-│   │   └── DatabaseService.ts
+│   │   ├── DatabaseService.ts
+│   │   └── UpstreamFlowService.ts  # Upstream flow logic (NEW)
 │   └── App.tsx           # Main application
 ├── supabase-schema.sql   # Database schema
+├── supabase-upstream-schema.sql  # Upstream flows schema (NEW)
 ├── vercel.json           # Vercel configuration
 ├── DEPLOYMENT.md         # Deployment guide
+├── UPSTREAM_FLOWS_MIGRATION.md  # Upstream flows setup guide (NEW)
 └── YEARLY_STATS_MIGRATION.md  # Yearly stats setup guide
 ```
 
