@@ -3,6 +3,15 @@ import { ArrowUp, ArrowDown, Minus, AlertTriangle } from 'lucide-react';
 import type { CurrentCondition } from '../services/WaterLevelService';
 import type { YearlyStats, MonthlyStats } from '../services/DatabaseService';
 
+// Rate of change thresholds (feet per hour)
+const RATE_VERY_FAST_THRESHOLD = 0.4;
+const RATE_FAST_THRESHOLD = 0.2;
+const RATE_NORMAL_THRESHOLD = 0.05;
+
+// Position thresholds for monthly range
+const POSITION_HIGH_THRESHOLD = 0.75;
+const POSITION_LOW_THRESHOLD = 0.25;
+
 interface CurrentLevelProps {
     data: CurrentCondition | null;
     loading: boolean;
@@ -40,13 +49,11 @@ export const CurrentLevel: React.FC<CurrentLevelProps> = ({ data, loading, month
     const getRateContext = () => {
         if (!monthlyStats || data.trend === 'stable') return null;
         
-        // If rate is > 0.2 ft/hr, it's significant
-        // If rate is > 0.4 ft/hr, it's very high
-        if (data.rateOfChange > 0.4) {
+        if (data.rateOfChange > RATE_VERY_FAST_THRESHOLD) {
             return 'Very Fast';
-        } else if (data.rateOfChange > 0.2) {
+        } else if (data.rateOfChange > RATE_FAST_THRESHOLD) {
             return 'Fast';
-        } else if (data.rateOfChange > 0.05) {
+        } else if (data.rateOfChange > RATE_NORMAL_THRESHOLD) {
             return 'Normal';
         }
         return null;
@@ -73,12 +80,12 @@ export const CurrentLevel: React.FC<CurrentLevelProps> = ({ data, loading, month
 
     // Get position relative to monthly range
     const getPositionContext = () => {
-        if (!monthlyStats) return null;
+        if (!monthlyStats || monthlyStats.monthly_range === 0) return null;
         
         const position = (data.currentLevel - monthlyStats.monthly_low) / monthlyStats.monthly_range;
         
-        if (position > 0.75) return 'High in monthly range';
-        if (position < 0.25) return 'Low in monthly range';
+        if (position > POSITION_HIGH_THRESHOLD) return 'High in monthly range';
+        if (position < POSITION_LOW_THRESHOLD) return 'Low in monthly range';
         return 'Mid-range for month';
     };
 
