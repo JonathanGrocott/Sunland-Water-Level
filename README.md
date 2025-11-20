@@ -15,7 +15,7 @@ A beautiful, real-time water level tracker for the Columbia River at Sunland (Wa
 - 📉 **All-Time Records** - Historical high/low water levels since tracking began
 - 🌅 **Beautiful Sun Theme** - Stunning gradient background with animations
 - 📱 **Mobile Responsive** - Perfect on any device
-- ♻️ **Auto-Refresh** - Updates every 15 minutes
+- ♻️ **Auto-Refresh** - Updates every 5 minutes
 
 ## Live Demo
 
@@ -72,7 +72,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
 1. **Real-Time Data**: 
    - Frontend fetches water level data from `/api/usace`
    - Serverless function proxies requests to USACE API
-   - Data updates every 15 minutes automatically
+   - Data updates every 5 minutes automatically
 
 2. **Historical Records**:
    - Cron job runs daily at midnight UTC
