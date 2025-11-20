@@ -7,7 +7,7 @@ import { MinMaxRecords } from './components/MinMaxRecords';
 import { waterLevelService } from './services/WaterLevelService';
 import { databaseService } from './services/DatabaseService';
 import type { CurrentCondition, WaterLevelData } from './services/WaterLevelService';
-import type { AllTimeRecords } from './services/DatabaseService';
+import type { AllTimeRecords, YearlyStats } from './services/DatabaseService';
 import { RefreshCw } from 'lucide-react';
 
 function App() {
@@ -16,6 +16,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<AllTimeRecords | null>(null);
   const [recordsLoading, setRecordsLoading] = useState(true);
+  const [yearlyStats, setYearlyStats] = useState<YearlyStats | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -36,8 +37,12 @@ function App() {
   const fetchRecords = async () => {
     setRecordsLoading(true);
     try {
-      const allTimeRecords = await databaseService.getAllTimeRecords();
+      const [allTimeRecords, yearlyData] = await Promise.all([
+        databaseService.getAllTimeRecords(),
+        databaseService.getYearlyStats()
+      ]);
       setRecords(allTimeRecords);
+      setYearlyStats(yearlyData);
     } catch (error) {
       console.error("Failed to fetch records", error);
     } finally {
@@ -67,10 +72,10 @@ function App() {
         <div className="flex-grow flex flex-col gap-6">
           <CurrentLevel data={currentCondition} loading={loading} />
 
-          <MinMaxRecords records={records} loading={recordsLoading} />
+          <MinMaxRecords records={records} yearlyStats={yearlyStats} loading={recordsLoading} />
 
           {!loading && (
-            <LevelChart data={history} />
+            <LevelChart data={history} yearlyStats={yearlyStats} />
           )}
         </div>
 

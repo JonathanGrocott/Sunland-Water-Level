@@ -24,6 +24,16 @@ export interface AllTimeRecords {
     } | null;
 }
 
+export interface YearlyStats {
+    yearly_low: number;
+    yearly_high: number;
+    yearly_avg: number;
+    yearly_low_timestamp: string;
+    yearly_high_timestamp: string;
+    yearly_low_date: string;
+    yearly_high_date: string;
+}
+
 class DatabaseService {
     private supabase: SupabaseClient | null = null;
 
@@ -106,6 +116,26 @@ class DatabaseService {
         } catch (error) {
             console.error('Error fetching daily stats:', error);
             return [];
+        }
+    }
+
+    async getYearlyStats(): Promise<YearlyStats | null> {
+        try {
+            const client = this.getClient();
+
+            const { data, error } = await client
+                .from('yearly_stats')
+                .select('*')
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                console.error('Error fetching yearly stats:', error);
+            }
+
+            return data || null;
+        } catch (error) {
+            console.error('Error fetching yearly stats:', error);
+            return null;
         }
     }
 }
