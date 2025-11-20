@@ -8,8 +8,11 @@ A beautiful, real-time water level tracker for the Columbia River at Sunland (Wa
 ## Features
 
 - 🌊 **Real-Time Water Levels** - Live data from USACE Dataquery API
-- 📈 **24-Hour Trend Chart** - Visual representation of water level changes
-- 📊 **All-Time Records** - Historical high/low water levels
+- 📈 **24-Hour Trend Chart** - Visual representation of water level changes with historical reference bands
+- 📊 **Yearly Statistics** - Rolling 365-day high, low, and average water levels
+- 🎯 **Visual Reference Bands** - Chart overlays showing yearly high, low, and average for context
+- 🔄 **Flow Trend Indicator** - Real-time rising/falling/stable status with rate of change
+- 📉 **All-Time Records** - Historical high/low water levels since tracking began
 - 🌅 **Beautiful Sun Theme** - Stunning gradient background with animations
 - 📱 **Mobile Responsive** - Perfect on any device
 - ♻️ **Auto-Refresh** - Updates every 15 minutes
@@ -76,6 +79,12 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Fetches last 24h of data and calculates min/max/avg
    - Stores in Supabase `daily_stats` table
    - Frontend displays all-time high/low records
+   
+3. **Yearly Statistics**:
+   - `yearly_stats` view calculates rolling 365-day statistics
+   - Automatically updates as new daily data is added
+   - Provides context through visual reference bands on charts
+   - Shows yearly high, low, average, and range
 
 ### File Structure
 
@@ -96,7 +105,8 @@ Sunland-Water-Level/
 │   └── App.tsx           # Main application
 ├── supabase-schema.sql   # Database schema
 ├── vercel.json           # Vercel configuration
-└── DEPLOYMENT.md         # Deployment guide
+├── DEPLOYMENT.md         # Deployment guide
+└── YEARLY_STATS_MIGRATION.md  # Yearly stats setup guide
 ```
 
 ## Environment Variables
