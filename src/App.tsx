@@ -53,7 +53,7 @@ function App() {
   useEffect(() => {
     fetchData();
     fetchRecords();
-    const interval = setInterval(fetchData, 60000 * 15); // Refresh every 15 mins
+    const interval = setInterval(fetchData, 60000 * 5); // Refresh every 5 mins
     return () => clearInterval(interval);
   }, []);
 
@@ -72,11 +72,11 @@ function App() {
         <div className="flex-grow flex flex-col gap-6">
           <CurrentLevel data={currentCondition} loading={loading} />
 
-          <MinMaxRecords records={records} yearlyStats={yearlyStats} loading={recordsLoading} />
-
           {!loading && (
             <LevelChart data={history} yearlyStats={yearlyStats} />
           )}
+
+          <MinMaxRecords records={records} yearlyStats={yearlyStats} loading={recordsLoading} />
         </div>
 
         <footer className="mt-auto pt-8 pb-4 text-center">
