@@ -41,6 +41,9 @@ export interface MonthlyStats {
     monthly_range: number; // high - low
 }
 
+// Time period constants
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
 class DatabaseService {
     private supabase: SupabaseClient | null = null;
 
@@ -154,7 +157,7 @@ class DatabaseService {
             const { data, error } = await client
                 .from('daily_stats')
                 .select('min_elevation, max_elevation, avg_elevation')
-                .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+                .gte('date', new Date(Date.now() - THIRTY_DAYS_MS).toISOString().split('T')[0])
                 .order('date', { ascending: false });
 
             if (error) {

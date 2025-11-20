@@ -12,6 +12,9 @@ const RATE_NORMAL_THRESHOLD = 0.05;
 const POSITION_HIGH_THRESHOLD = 0.75;
 const POSITION_LOW_THRESHOLD = 0.25;
 
+// Minimum rate threshold for time-to-low calculations (feet per hour)
+const MIN_RATE_FOR_PREDICTION = 0.001;
+
 interface CurrentLevelProps {
     data: CurrentCondition | null;
     loading: boolean;
@@ -61,7 +64,7 @@ export const CurrentLevel: React.FC<CurrentLevelProps> = ({ data, loading, month
 
     // Calculate time to reach yearly low if falling
     const getTimeToLow = () => {
-        if (data.trend !== 'falling' || !yearlyStats || data.rateOfChange === 0) {
+        if (data.trend !== 'falling' || !yearlyStats || data.rateOfChange < MIN_RATE_FOR_PREDICTION) {
             return null;
         }
 
