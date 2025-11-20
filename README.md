@@ -16,7 +16,7 @@ A beautiful, real-time water level tracker for the Columbia River at Sunland (Wa
 
 ## Live Demo
 
-Visit the live site: [https://your-app.vercel.app](https://your-app.vercel.app)
+Visit the live site: [https://sunland-water-level.vercel.app/](https://sunland-water-level.vercel.app/)
 
 ## Tech Stack
 
