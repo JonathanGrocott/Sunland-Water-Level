@@ -14,7 +14,7 @@
         },
         {
             "path": "/api/store-upstream-flows",
-            "schedule": "0 * * * *"
+            "schedule": "0 0 * * *"
         }
     ]
 }
