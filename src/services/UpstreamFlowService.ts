@@ -76,8 +76,9 @@ class UpstreamFlowService {
      * Calculate flow balance at Wanapum Dam
      * Positive net flow = level rising
      * Negative net flow = level falling
+     * Uses Rock Island Dam outflow as Wanapum inflow (Rock Island is directly upstream)
      */
-    calculateFlowBalance(wanapumData: DamData): FlowBalance {
+    calculateFlowBalance(wanapumData: DamData, rockIslandData?: DamData): FlowBalance {
         if (!wanapumData.available || !wanapumData.current) {
             return {
                 netFlow: 0,
@@ -87,7 +88,19 @@ class UpstreamFlowService {
             };
         }
 
-        const inflow = wanapumData.current.inflow?.value || 0;
+        // Wanapum basin inflow should be Rock Island dam outflow (Rock Island is directly upstream)
+        // Fall back to Wanapum's reported inflow if Rock Island data is unavailable
+        let inflow = 0;
+        let hasInflow = false;
+        
+        if (rockIslandData?.available && rockIslandData.current?.outflow) {
+            inflow = rockIslandData.current.outflow.value;
+            hasInflow = true;
+        } else if (wanapumData.current.inflow) {
+            inflow = wanapumData.current.inflow.value;
+            hasInflow = true;
+        }
+
         const outflow = wanapumData.current.outflow?.value || 0;
         const netFlow = inflow - outflow;
 
@@ -102,7 +115,6 @@ class UpstreamFlowService {
         else if (ratePerHour < -0.05) prediction = 'falling';
 
         // Determine confidence based on data quality
-        const hasInflow = wanapumData.current.inflow !== null;
         const hasOutflow = wanapumData.current.outflow !== null;
         const confidence: 'high' | 'medium' | 'low' =
             hasInflow && hasOutflow ? 'high' :
@@ -121,7 +133,7 @@ class UpstreamFlowService {
      * Prioritizes closer dams (Rock Island, Rocky Reach, Wells) over distant ones (Chief Joseph, Grand Coulee)
      */
     generatePrediction(upstreamData: UpstreamData): PredictionData {
-        const flowBalance = this.calculateFlowBalance(upstreamData.wanapum);
+        const flowBalance = this.calculateFlowBalance(upstreamData.wanapum, upstreamData.rockIsland);
         const reasons: string[] = [];
 
         // Prioritize closer dams for short-term predictions
