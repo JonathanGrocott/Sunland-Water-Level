@@ -6,6 +6,7 @@ This guide explains how to set up the upstream flow monitoring feature for the S
 
 The upstream flow monitoring feature adds predictive capabilities by tracking water releases from dams upstream of Wanapum. The system prioritizes closer dams for better short-term predictions:
 
+- **Rock Island Dam** (~5 miles upstream): 1-2 hour impact window
 - **Rocky Reach Dam** (~20 miles upstream): 2-4 hour impact window
 - **Wells Dam** (~35 miles upstream): 4-8 hour impact window  
 - **Chief Joseph Dam** (~50 miles upstream): 6-12 hour impact window
@@ -106,7 +107,7 @@ Vercel will automatically deploy the changes.
    curl https://your-app.vercel.app/api/upstream-dams
    ```
    
-   You should see data for Rocky Reach, Wells, Chief Joseph, Grand Coulee, Rock Island, and Wanapum dams.
+   You should see data for Rock Island, Rocky Reach, Wells, Chief Joseph, Grand Coulee, and Wanapum dams.
 
 2. **Manually trigger the storage endpoint** (one time):
    ```bash
@@ -140,6 +141,7 @@ You should see recent data from the dams.
    - 6-hour outlook (Rising/Falling/Stable)
    - Wanapum flow balance
    - Upstream dam status (prioritizing closer dams when available):
+     - Rock Island Dam (if data available)
      - Rocky Reach Dam (if data available)
      - Wells Dam (if data available)
      - Chief Joseph Dam (fallback or supplementary)

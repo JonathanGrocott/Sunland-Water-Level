@@ -25,6 +25,7 @@ export default async function handler(req, res) {
             'CJO.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'GCL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
             'RIS.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+            'RIS.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'WAN.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
             'WAN.Flow-In.Ave.1Hour.1Hour.CBT-REV',
         ];

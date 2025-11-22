@@ -31,8 +31,9 @@ export default async function handler(req, res) {
             // Grand Coulee Dam (furthest upstream)
             'GCL.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
 
-            // Rock Island Dam (downstream - for reference only)
+            // Rock Island Dam (directly upstream of Wanapum)
             'RIS.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
+            'RIS.Flow-In.Ave.1Hour.1Hour.CBT-REV',  // Inflow
 
             // Wanapum Dam (for comparison)
             'WAN.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
