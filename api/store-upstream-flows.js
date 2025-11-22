@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Cron job to store upstream flow data hourly
+// Cron job to store upstream flow data daily
 export default async function handler(req, res) {
     // Only allow POST requests (for security, can be called by cron)
     if (req.method !== 'POST' && req.method !== 'GET') {

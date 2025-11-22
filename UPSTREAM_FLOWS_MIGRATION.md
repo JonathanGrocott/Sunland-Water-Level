@@ -46,7 +46,7 @@ The upstream flow data needs to be collected every hour.
 3. Click **Add Cron Job**
 4. Configure:
    - **Name**: Store Upstream Flows
-   - **Schedule**: `0 * * * *` (every hour at minute 0)
+   - **Schedule**: `0 0 * * *` (daily at midnight)
    - **Path**: `/api/store-upstream-flows`
    - **Timezone**: `America/Los_Angeles` (PST/PDT)
 5. Save the cron job
@@ -64,7 +64,7 @@ The cron job is already configured in `vercel.json`:
     },
     {
       "path": "/api/store-upstream-flows",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
@@ -149,7 +149,7 @@ FROM upstream_flows
 GROUP BY dam_name;
 ```
 
-Each dam should have approximately 24 readings per day.
+Each dam should have 1 reading per day.
 
 ## Troubleshooting
 
@@ -202,13 +202,13 @@ To change how often data is collected, modify the cron schedule in `vercel.json`
 
 ```json
 {
-  "schedule": "0 * * * *"  // Every hour
+  "schedule": "0 0 * * *"  // Daily at midnight (default for Vercel hobby plan)
   // OR
-  "schedule": "*/30 * * * *"  // Every 30 minutes
+  "schedule": "0 */6 * * *"  // Every 6 hours (if using a paid Vercel plan)
 }
 ```
 
-**Note**: More frequent collection = more database storage used (still minimal)
+**Note**: Vercel hobby plan allows only 2 cron jobs that run once per day. More frequent collection requires a paid plan.
 
 ### Adjust Prediction Sensitivity
 
@@ -227,21 +227,21 @@ if (ratePerHour > 0.02) prediction = 'rising';
 
 The `upstream_flows` table will grow over time. Recommended retention:
 
-- **Keep**: Last 30 days for pattern analysis (Phase 2)
+- **Keep**: Last 365 days for pattern analysis
 - **Archive**: Older data to CSV if needed
 - **Auto-cleanup** (optional):
 
 ```sql
--- Delete data older than 90 days (run monthly)
+-- Delete data older than 365 days (run yearly)
 DELETE FROM upstream_flows 
-WHERE timestamp < NOW() - INTERVAL '90 days';
+WHERE timestamp < NOW() - INTERVAL '365 days';
 ```
 
 ## Cost Estimates
 
-- **Supabase Storage**: ~50KB per day = ~18MB per year (well within free tier)
-- **Vercel Functions**: 24 executions/day = ~720/month (well within free tier)
-- **API Calls to USACE**: 24/day (respectful, no rate limit issues)
+- **Supabase Storage**: ~2KB per day = ~730KB per year (well within free tier)
+- **Vercel Functions**: 1 execution/day = ~30/month (well within free tier)
+- **API Calls to USACE**: 1/day (respectful, no rate limit issues)
 
 ## Next Steps
 

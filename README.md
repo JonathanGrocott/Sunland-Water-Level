@@ -99,10 +99,10 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Frontend displays all-time high/low records
    
 5. **Upstream Flow Storage**:
-   - Cron job runs every hour
+   - Cron job runs daily at midnight UTC
    - Collects flow data from upstream dams
    - Stores in Supabase `upstream_flows` table
-   - Builds dataset for future pattern analysis (Phase 2)
+   - Builds dataset for pattern analysis
 
 6. **Yearly Statistics**:
    - `yearly_stats` view calculates rolling 365-day statistics
