@@ -144,7 +144,6 @@ You should see recent data from the dams.
      - Wells Dam (if data available)
      - Chief Joseph Dam (fallback or supplementary)
      - Grand Coulee Dam (supplementary for long-term trends)
-   - Grand Coulee Dam status
 
 ## Step 5: Monitor Data Collection
 

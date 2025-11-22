@@ -127,8 +127,8 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
                     />
                 )}
                 
-                {/* Show Chief Joseph if no closer dams available, or as supplementary */}
-                {((!data.rockyReach.available && !data.wells.available) || data.chiefJoseph.available) && (
+                {/* Show Chief Joseph when it's the primary source OR as supplementary if closer dams are available */}
+                {data.chiefJoseph.available && (
                     <DamCard
                         dam={data.chiefJoseph}
                         timeToImpact={upstreamFlowService.getTimeToImpact('CJO')}
