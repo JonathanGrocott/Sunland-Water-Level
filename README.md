@@ -81,6 +81,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
 2. **Upstream Flow Monitoring**:
    - Frontend fetches upstream dam data from `/api/upstream-dams`
    - Prioritizes closer dams for better short-term predictions:
+     - Rock Island Dam (~5 mi upstream, 1-2 hour impact)
      - Rocky Reach Dam (~20 mi upstream, 2-4 hour impact)
      - Wells Dam (~35 mi upstream, 4-8 hour impact)
      - Chief Joseph Dam (~50 mi upstream, 6-12 hour impact)

@@ -109,12 +109,21 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
 
             {/* Upstream Dams */}
             <div className="space-y-2">
-                {/* Show Rocky Reach if available (closest upstream) */}
+                {/* Show Rock Island if available (closest upstream) */}
+                {data.rockIsland.available && (
+                    <DamCard
+                        dam={data.rockIsland}
+                        timeToImpact={upstreamFlowService.getTimeToImpact('RIS')}
+                        isPrimary={true}
+                    />
+                )}
+                
+                {/* Show Rocky Reach if available (next closest upstream) */}
                 {data.rockyReach.available && (
                     <DamCard
                         dam={data.rockyReach}
                         timeToImpact={upstreamFlowService.getTimeToImpact('RRH')}
-                        isPrimary={true}
+                        isPrimary={!data.rockIsland.available}
                     />
                 )}
                 
@@ -123,7 +132,7 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
                     <DamCard
                         dam={data.wells}
                         timeToImpact={upstreamFlowService.getTimeToImpact('WEL')}
-                        isPrimary={!data.rockyReach.available}
+                        isPrimary={!data.rockIsland.available && !data.rockyReach.available}
                     />
                 )}
                 
@@ -132,7 +141,7 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
                     <DamCard
                         dam={data.chiefJoseph}
                         timeToImpact={upstreamFlowService.getTimeToImpact('CJO')}
-                        isPrimary={!data.rockyReach.available && !data.wells.available}
+                        isPrimary={!data.rockIsland.available && !data.rockyReach.available && !data.wells.available}
                     />
                 )}
                 

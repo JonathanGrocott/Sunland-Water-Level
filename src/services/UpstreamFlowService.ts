@@ -118,22 +118,28 @@ class UpstreamFlowService {
 
     /**
      * Generate prediction based on upstream conditions
-     * Prioritizes closer dams (Rocky Reach, Wells) over distant ones (Chief Joseph, Grand Coulee)
+     * Prioritizes closer dams (Rock Island, Rocky Reach, Wells) over distant ones (Chief Joseph, Grand Coulee)
      */
     generatePrediction(upstreamData: UpstreamData): PredictionData {
         const flowBalance = this.calculateFlowBalance(upstreamData.wanapum);
         const reasons: string[] = [];
 
         // Prioritize closer dams for short-term predictions
-        // Rocky Reach is closest upstream (~2-4 hour impact)
+        // Rock Island is directly upstream (~1-2 hour impact)
+        // Rocky Reach is next upstream (~2-4 hour impact)
         // Wells is next (~4-8 hour impact)
         // Chief Joseph is further (~6-12 hour impact)
         
         let primaryDam = null;
         let primaryDamName = '';
         
-        // Try Rocky Reach first (closest, best for 2-6 hour prediction)
-        if (upstreamData.rockyReach.available && upstreamData.rockyReach.trend) {
+        // Try Rock Island first (closest, best for 1-2 hour prediction)
+        if (upstreamData.rockIsland.available && upstreamData.rockIsland.trend) {
+            primaryDam = upstreamData.rockIsland;
+            primaryDamName = 'Rock Island';
+        }
+        // Try Rocky Reach next (good for 2-6 hour prediction)
+        else if (upstreamData.rockyReach.available && upstreamData.rockyReach.trend) {
             primaryDam = upstreamData.rockyReach;
             primaryDamName = 'Rocky Reach';
         }
@@ -199,6 +205,7 @@ class UpstreamFlowService {
     /**
      * Get time-to-impact estimate for upstream releases
      * Water travels approximately 2-3 mph in the Columbia River
+     * Rock Island: ~5 miles upstream (directly upstream)
      * Rocky Reach: ~20 miles upstream
      * Wells: ~35 miles upstream  
      * Chief Joseph: ~50 miles upstream
@@ -206,6 +213,8 @@ class UpstreamFlowService {
      */
     getTimeToImpact(damCode: string): string {
         switch (damCode) {
+            case 'RIS':
+                return '1-2 hours';
             case 'RRH':
                 return '2-4 hours';
             case 'WEL':
@@ -214,8 +223,6 @@ class UpstreamFlowService {
                 return '6-12 hours';
             case 'GCL':
                 return '24-36 hours';
-            case 'RIS':
-                return 'Downstream';
             default:
                 return 'Unknown';
         }
