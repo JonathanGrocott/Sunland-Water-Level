@@ -17,6 +17,10 @@ export default async function handler(req, res) {
 
         // Define the timeseries we want to fetch
         const timeseries = [
+            'RRH.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+            'RRH.Flow-In.Ave.1Hour.1Hour.CBT-REV',
+            'WEL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+            'WEL.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'CJO.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
             'CJO.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'GCL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
@@ -45,6 +49,8 @@ export default async function handler(req, res) {
 
         // Process each dam's data
         const dams = [
+            { code: 'RRH', name: 'ROCKY_REACH' },
+            { code: 'WEL', name: 'WELLS' },
             { code: 'CJO', name: 'CHIEF_JOSEPH' },
             { code: 'GCL', name: 'GRAND_COULEE' },
             { code: 'RIS', name: 'ROCK_ISLAND' },

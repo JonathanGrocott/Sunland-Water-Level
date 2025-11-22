@@ -4,7 +4,14 @@ This guide explains how to set up the upstream flow monitoring feature for the S
 
 ## Overview
 
-The upstream flow monitoring feature adds predictive capabilities by tracking water releases from dams upstream of Wanapum (Chief Joseph and Grand Coulee). This helps Sunland residents predict whether the water level will rise or fall in the next 6-12 hours.
+The upstream flow monitoring feature adds predictive capabilities by tracking water releases from dams upstream of Wanapum. The system prioritizes closer dams for better short-term predictions:
+
+- **Rocky Reach Dam** (~20 miles upstream): 2-4 hour impact window
+- **Wells Dam** (~35 miles upstream): 4-8 hour impact window  
+- **Chief Joseph Dam** (~50 miles upstream): 6-12 hour impact window
+- **Grand Coulee Dam** (~100 miles upstream): 24-36 hour impact window
+
+The system automatically selects the best available upstream dam data for predictions, preferring closer dams when data is available. This helps Sunland residents predict whether the water level will rise or fall in the next 6-12 hours with improved accuracy.
 
 ## Prerequisites
 
@@ -99,7 +106,7 @@ Vercel will automatically deploy the changes.
    curl https://your-app.vercel.app/api/upstream-dams
    ```
    
-   You should see data for Chief Joseph, Grand Coulee, Rock Island, and Wanapum dams.
+   You should see data for Rocky Reach, Wells, Chief Joseph, Grand Coulee, Rock Island, and Wanapum dams.
 
 2. **Manually trigger the storage endpoint** (one time):
    ```bash
@@ -132,8 +139,11 @@ You should see recent data from the dams.
 3. It should display:
    - 6-hour outlook (Rising/Falling/Stable)
    - Wanapum flow balance
-   - Chief Joseph Dam status
-   - Grand Coulee Dam status
+   - Upstream dam status (prioritizing closer dams when available):
+     - Rocky Reach Dam (if data available)
+     - Wells Dam (if data available)
+     - Chief Joseph Dam (fallback or supplementary)
+     - Grand Coulee Dam (supplementary for long-term trends)
 
 ## Step 5: Monitor Data Collection
 

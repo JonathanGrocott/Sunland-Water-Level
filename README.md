@@ -78,9 +78,14 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Serverless function proxies requests to USACE API
    - Data updates every 5 minutes automatically
 
-2. **Upstream Flow Monitoring** (NEW):
+2. **Upstream Flow Monitoring**:
    - Frontend fetches upstream dam data from `/api/upstream-dams`
-   - Tracks Chief Joseph Dam (15 mi upstream) and Grand Coulee Dam (100 mi upstream)
+   - Prioritizes closer dams for better short-term predictions:
+     - Rocky Reach Dam (~20 mi upstream, 2-4 hour impact)
+     - Wells Dam (~35 mi upstream, 4-8 hour impact)
+     - Chief Joseph Dam (~50 mi upstream, 6-12 hour impact)
+     - Grand Coulee Dam (~100 mi upstream, 24-36 hour impact)
+   - Automatically selects the best available upstream dam for predictions
    - Compares Wanapum inflow vs outflow to predict level changes
    - Provides 6-hour outlook: Rising/Falling/Stable
    - Updates every 5 minutes with current water level data
