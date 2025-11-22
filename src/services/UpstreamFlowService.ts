@@ -93,10 +93,10 @@ class UpstreamFlowService {
         let inflow = 0;
         let hasInflow = false;
         
-        if (rockIslandData?.available && rockIslandData.current?.outflow?.value) {
+        if (rockIslandData?.available && rockIslandData.current?.outflow?.value !== undefined) {
             inflow = rockIslandData.current.outflow.value;
             hasInflow = true;
-        } else if (wanapumData.current.inflow?.value) {
+        } else if (wanapumData.current.inflow?.value !== undefined) {
             inflow = wanapumData.current.inflow.value;
             hasInflow = true;
         }
