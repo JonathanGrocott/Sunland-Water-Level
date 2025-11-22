@@ -90,18 +90,14 @@ class UpstreamFlowService {
 
         // Wanapum basin inflow should be Rock Island dam outflow (Rock Island is directly upstream)
         // Fall back to Wanapum's reported inflow if Rock Island data is unavailable
-        let inflow = 0;
-        let hasInflow = false;
+        const rockIslandOutflow = rockIslandData?.current?.outflow?.value;
+        const wanapumInflow = wanapumData.current.inflow?.value;
         
-        if (rockIslandData?.available && rockIslandData.current?.outflow?.value !== undefined) {
-            inflow = rockIslandData.current.outflow.value;
-            hasInflow = true;
-        } else if (wanapumData.current.inflow?.value !== undefined) {
-            inflow = wanapumData.current.inflow.value;
-            hasInflow = true;
-        }
+        const inflow = rockIslandOutflow ?? wanapumInflow ?? 0;
+        const hasInflow = rockIslandOutflow !== undefined || wanapumInflow !== undefined;
 
         const outflow = wanapumData.current.outflow?.value ?? 0;
+        const hasOutflow = wanapumData.current.outflow?.value !== undefined;
         const netFlow = inflow - outflow;
 
         // Calculate rate of change in feet per hour
@@ -115,7 +111,6 @@ class UpstreamFlowService {
         else if (ratePerHour < -0.05) prediction = 'falling';
 
         // Determine confidence based on data quality
-        const hasOutflow = wanapumData.current.outflow?.value !== undefined;
         const confidence: 'high' | 'medium' | 'low' =
             hasInflow && hasOutflow ? 'high' :
                 hasOutflow ? 'medium' : 'low';
