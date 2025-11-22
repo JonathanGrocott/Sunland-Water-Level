@@ -101,7 +101,7 @@ class UpstreamFlowService {
             hasInflow = true;
         }
 
-        const outflow = wanapumData.current.outflow?.value || 0;
+        const outflow = wanapumData.current.outflow?.value ?? 0;
         const netFlow = inflow - outflow;
 
         // Calculate rate of change in feet per hour
@@ -115,7 +115,7 @@ class UpstreamFlowService {
         else if (ratePerHour < -0.05) prediction = 'falling';
 
         // Determine confidence based on data quality
-        const hasOutflow = wanapumData.current.outflow !== null;
+        const hasOutflow = wanapumData.current.outflow?.value !== undefined;
         const confidence: 'high' | 'medium' | 'low' =
             hasInflow && hasOutflow ? 'high' :
                 hasOutflow ? 'medium' : 'low';
