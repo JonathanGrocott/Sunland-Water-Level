@@ -74,8 +74,11 @@ class UpstreamFlowService {
      * Calculate flow balance at Wanapum Dam
      * Positive net flow = level rising
      * Negative net flow = level falling
+     * 
+     * @param wanapumData - Wanapum dam data
+     * @param rockIslandData - Rock Island dam data (used for inflow if Wanapum inflow unavailable)
      */
-    calculateFlowBalance(wanapumData: DamData): FlowBalance {
+    calculateFlowBalance(wanapumData: DamData, rockIslandData?: DamData): FlowBalance {
         if (!wanapumData.available || !wanapumData.current) {
             return {
                 netFlow: 0,
@@ -85,7 +88,11 @@ class UpstreamFlowService {
             };
         }
 
-        const inflow = wanapumData.current.inflow?.value || 0;
+        // Use Rock Island outflow as Wanapum inflow (hydraulic reality)
+        // Rock Island is directly upstream, so its outflow becomes Wanapum's inflow
+        const inflow = rockIslandData?.current?.outflow?.value 
+            || wanapumData.current.inflow?.value 
+            || 0;
         const outflow = wanapumData.current.outflow?.value || 0;
         const netFlow = inflow - outflow;
 
@@ -100,7 +107,7 @@ class UpstreamFlowService {
         else if (ratePerHour < -0.05) prediction = 'falling';
 
         // Determine confidence based on data quality
-        const hasInflow = wanapumData.current.inflow !== null;
+        const hasInflow = rockIslandData?.current?.outflow !== null || wanapumData.current.inflow !== null;
         const hasOutflow = wanapumData.current.outflow !== null;
         const confidence: 'high' | 'medium' | 'low' =
             hasInflow && hasOutflow ? 'high' :
@@ -118,7 +125,7 @@ class UpstreamFlowService {
      * Generate prediction based on upstream conditions
      */
     generatePrediction(upstreamData: UpstreamData): PredictionData {
-        const flowBalance = this.calculateFlowBalance(upstreamData.wanapum);
+        const flowBalance = this.calculateFlowBalance(upstreamData.wanapum, upstreamData.rockIsland);
         const reasons: string[] = [];
 
         // Factor in Chief Joseph trend (most important for short-term)

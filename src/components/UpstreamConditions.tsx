@@ -35,7 +35,7 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
     }
 
     const prediction = upstreamFlowService.generatePrediction(data);
-    const flowBalance = upstreamFlowService.calculateFlowBalance(data.wanapum);
+    const flowBalance = upstreamFlowService.calculateFlowBalance(data.wanapum, data.rockIsland);
 
     return (
         <div className="w-full p-5 backdrop-blur-sm bg-white/5 rounded-2xl border border-white/10">
@@ -82,10 +82,15 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
                     <div>
                         <div className="text-white/50 text-xs">Inflow</div>
                         <div className="text-white font-medium">
-                            {data.wanapum.current?.inflow?.value
-                                ? upstreamFlowService.formatFlow(data.wanapum.current.inflow.value)
-                                : 'N/A'}
+                            {data.rockIsland.current?.outflow?.value
+                                ? upstreamFlowService.formatFlow(data.rockIsland.current.outflow.value)
+                                : data.wanapum.current?.inflow?.value
+                                    ? upstreamFlowService.formatFlow(data.wanapum.current.inflow.value)
+                                    : 'N/A'}
                         </div>
+                        {data.rockIsland.current?.outflow?.value && (
+                            <div className="text-white/40 text-xs">from Rock Island</div>
+                        )}
                     </div>
                     <div>
                         <div className="text-white/50 text-xs">Outflow</div>
