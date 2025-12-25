@@ -76,7 +76,9 @@ class UpstreamFlowService {
      * Calculate flow balance at Wanapum Dam
      * Positive net flow = level rising
      * Negative net flow = level falling
-     * Uses Rock Island Dam outflow as Wanapum inflow (Rock Island is directly upstream)
+     * 
+     * @param wanapumData - Wanapum dam data
+     * @param rockIslandData - Rock Island dam data (used for inflow if Wanapum inflow unavailable)
      */
     calculateFlowBalance(wanapumData: DamData, rockIslandData?: DamData): FlowBalance {
         if (!wanapumData.available || !wanapumData.current) {
@@ -88,16 +90,12 @@ class UpstreamFlowService {
             };
         }
 
-        // Wanapum basin inflow should be Rock Island dam outflow (Rock Island is directly upstream)
-        // Fall back to Wanapum's reported inflow if Rock Island data is unavailable
-        const rockIslandOutflow = rockIslandData?.current?.outflow?.value;
-        const wanapumInflow = wanapumData.current.inflow?.value;
-        
-        const inflow = rockIslandOutflow ?? wanapumInflow ?? 0;
-        const hasInflow = rockIslandOutflow !== undefined || wanapumInflow !== undefined;
-
-        const outflow = wanapumData.current.outflow?.value ?? 0;
-        const hasOutflow = wanapumData.current.outflow?.value !== undefined;
+        // Use Rock Island outflow as Wanapum inflow (hydraulic reality)
+        // Rock Island is directly upstream, so its outflow becomes Wanapum's inflow
+        const inflow = rockIslandData?.current?.outflow?.value 
+            || wanapumData.current.inflow?.value 
+            || 0;
+        const outflow = wanapumData.current.outflow?.value || 0;
         const netFlow = inflow - outflow;
 
         // Calculate rate of change in feet per hour
@@ -111,6 +109,8 @@ class UpstreamFlowService {
         else if (ratePerHour < -0.05) prediction = 'falling';
 
         // Determine confidence based on data quality
+        const hasInflow = rockIslandData?.current?.outflow !== null || wanapumData.current.inflow !== null;
+        const hasOutflow = wanapumData.current.outflow !== null;
         const confidence: 'high' | 'medium' | 'low' =
             hasInflow && hasOutflow ? 'high' :
                 hasOutflow ? 'medium' : 'low';
