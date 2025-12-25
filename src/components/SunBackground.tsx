@@ -12,6 +12,9 @@ export const SunBackground: React.FC = () => {
 
             {/* Overlay texture or particles could go here */}
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+            
+            {/* Dark overlay for better text readability */}
+            <div className="absolute inset-0 bg-black/40"></div>
         </div>
     );
 };
