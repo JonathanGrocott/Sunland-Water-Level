@@ -78,9 +78,15 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Serverless function proxies requests to USACE API
    - Data updates every 5 minutes automatically
 
-2. **Upstream Flow Monitoring** (NEW):
+2. **Upstream Flow Monitoring**:
    - Frontend fetches upstream dam data from `/api/upstream-dams`
-   - Tracks Chief Joseph Dam (15 mi upstream) and Grand Coulee Dam (100 mi upstream)
+   - Prioritizes closer dams for better short-term predictions:
+     - Rock Island Dam (~5 mi upstream, 1-2 hour impact)
+     - Rocky Reach Dam (~20 mi upstream, 2-4 hour impact)
+     - Wells Dam (~35 mi upstream, 4-8 hour impact)
+     - Chief Joseph Dam (~50 mi upstream, 6-12 hour impact)
+     - Grand Coulee Dam (~100 mi upstream, 24-36 hour impact)
+   - Automatically selects the best available upstream dam for predictions
    - Compares Wanapum inflow vs outflow to predict level changes
    - Provides 6-hour outlook: Rising/Falling/Stable
    - Updates every 5 minutes with current water level data
@@ -99,10 +105,10 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Frontend displays all-time high/low records
    
 5. **Upstream Flow Storage**:
-   - Cron job runs every hour
+   - Cron job runs daily at midnight UTC
    - Collects flow data from upstream dams
    - Stores in Supabase `upstream_flows` table
-   - Builds dataset for future pattern analysis (Phase 2)
+   - Builds dataset for pattern analysis
 
 6. **Yearly Statistics**:
    - `yearly_stats` view calculates rolling 365-day statistics

@@ -16,15 +16,24 @@ export default async function handler(req, res) {
         // Define the timeseries we want to fetch
         // Using USACE Dataquery API structure
         const timeseries = [
-            // Chief Joseph Dam
+            // Rocky Reach Dam (closest upstream)
+            'RRH.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
+            'RRH.Flow-In.Ave.1Hour.1Hour.CBT-REV',  // Inflow
+
+            // Wells Dam (next upstream)
+            'WEL.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
+            'WEL.Flow-In.Ave.1Hour.1Hour.CBT-REV',  // Inflow
+
+            // Chief Joseph Dam (further upstream)
             'CJO.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
             'CJO.Flow-In.Ave.1Hour.1Hour.CBT-REV',  // Inflow
 
-            // Grand Coulee Dam
+            // Grand Coulee Dam (furthest upstream)
             'GCL.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
 
-            // Rock Island Dam
+            // Rock Island Dam (directly upstream of Wanapum)
             'RIS.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
+            'RIS.Flow-In.Ave.1Hour.1Hour.CBT-REV',  // Inflow
 
             // Wanapum Dam (for comparison)
             'WAN.Flow-Out.Ave.1Hour.1Hour.CBT-REV', // Outflow
@@ -47,6 +56,8 @@ export default async function handler(req, res) {
 
         // Parse and structure the data
         const result = {
+            rockyReach: extractDamData(data, 'RRH', 'Rocky Reach'),
+            wells: extractDamData(data, 'WEL', 'Wells'),
             chiefJoseph: extractDamData(data, 'CJO', 'Chief Joseph'),
             grandCoulee: extractDamData(data, 'GCL', 'Grand Coulee'),
             rockIsland: extractDamData(data, 'RIS', 'Rock Island'),

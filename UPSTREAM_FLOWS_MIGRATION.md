@@ -4,7 +4,15 @@ This guide explains how to set up the upstream flow monitoring feature for the S
 
 ## Overview
 
-The upstream flow monitoring feature adds predictive capabilities by tracking water releases from dams upstream of Wanapum (Chief Joseph and Grand Coulee). This helps Sunland residents predict whether the water level will rise or fall in the next 6-12 hours.
+The upstream flow monitoring feature adds predictive capabilities by tracking water releases from dams upstream of Wanapum. The system prioritizes closer dams for better short-term predictions:
+
+- **Rock Island Dam** (~5 miles upstream): 1-2 hour impact window
+- **Rocky Reach Dam** (~20 miles upstream): 2-4 hour impact window
+- **Wells Dam** (~35 miles upstream): 4-8 hour impact window  
+- **Chief Joseph Dam** (~50 miles upstream): 6-12 hour impact window
+- **Grand Coulee Dam** (~100 miles upstream): 24-36 hour impact window
+
+The system automatically selects the best available upstream dam data for predictions, preferring closer dams when data is available. This helps Sunland residents predict whether the water level will rise or fall in the next 6-12 hours with improved accuracy.
 
 ## Prerequisites
 
@@ -46,7 +54,7 @@ The upstream flow data needs to be collected every hour.
 3. Click **Add Cron Job**
 4. Configure:
    - **Name**: Store Upstream Flows
-   - **Schedule**: `0 * * * *` (every hour at minute 0)
+   - **Schedule**: `0 0 * * *` (daily at midnight)
    - **Path**: `/api/store-upstream-flows`
    - **Timezone**: `America/Los_Angeles` (PST/PDT)
 5. Save the cron job
@@ -64,7 +72,7 @@ The cron job is already configured in `vercel.json`:
     },
     {
       "path": "/api/store-upstream-flows",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
@@ -99,7 +107,7 @@ Vercel will automatically deploy the changes.
    curl https://your-app.vercel.app/api/upstream-dams
    ```
    
-   You should see data for Chief Joseph, Grand Coulee, Rock Island, and Wanapum dams.
+   You should see data for Rock Island, Rocky Reach, Wells, Chief Joseph, Grand Coulee, and Wanapum dams.
 
 2. **Manually trigger the storage endpoint** (one time):
    ```bash
@@ -132,8 +140,12 @@ You should see recent data from the dams.
 3. It should display:
    - 6-hour outlook (Rising/Falling/Stable)
    - Wanapum flow balance
-   - Chief Joseph Dam status
-   - Grand Coulee Dam status
+   - Upstream dam status (prioritizing closer dams when available):
+     - Rock Island Dam (if data available)
+     - Rocky Reach Dam (if data available)
+     - Wells Dam (if data available)
+     - Chief Joseph Dam (fallback or supplementary)
+     - Grand Coulee Dam (supplementary for long-term trends)
 
 ## Step 5: Monitor Data Collection
 
@@ -149,7 +161,7 @@ FROM upstream_flows
 GROUP BY dam_name;
 ```
 
-Each dam should have approximately 24 readings per day.
+Each dam should have 1 reading per day.
 
 ## Troubleshooting
 
@@ -202,13 +214,13 @@ To change how often data is collected, modify the cron schedule in `vercel.json`
 
 ```json
 {
-  "schedule": "0 * * * *"  // Every hour
+  "schedule": "0 0 * * *"  // Daily at midnight (default for Vercel hobby plan)
   // OR
-  "schedule": "*/30 * * * *"  // Every 30 minutes
+  "schedule": "0 */6 * * *"  // Every 6 hours (if using a paid Vercel plan)
 }
 ```
 
-**Note**: More frequent collection = more database storage used (still minimal)
+**Note**: Vercel hobby plan allows only 2 cron jobs that run once per day. More frequent collection requires a paid plan.
 
 ### Adjust Prediction Sensitivity
 
@@ -227,21 +239,21 @@ if (ratePerHour > 0.02) prediction = 'rising';
 
 The `upstream_flows` table will grow over time. Recommended retention:
 
-- **Keep**: Last 30 days for pattern analysis (Phase 2)
+- **Keep**: Last 365 days for pattern analysis
 - **Archive**: Older data to CSV if needed
 - **Auto-cleanup** (optional):
 
 ```sql
--- Delete data older than 90 days (run monthly)
+-- Delete data older than 365 days (run yearly)
 DELETE FROM upstream_flows 
-WHERE timestamp < NOW() - INTERVAL '90 days';
+WHERE timestamp < NOW() - INTERVAL '365 days';
 ```
 
 ## Cost Estimates
 
-- **Supabase Storage**: ~50KB per day = ~18MB per year (well within free tier)
-- **Vercel Functions**: 24 executions/day = ~720/month (well within free tier)
-- **API Calls to USACE**: 24/day (respectful, no rate limit issues)
+- **Supabase Storage**: ~2KB per day = ~730KB per year (well within free tier)
+- **Vercel Functions**: 1 execution/day = ~30/month (well within free tier)
+- **API Calls to USACE**: 1/day (respectful, no rate limit issues)
 
 ## Next Steps
 

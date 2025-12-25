@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
-import type { UpstreamData } from '../services/UpstreamFlowService';
+import type { UpstreamData, DamData } from '../services/UpstreamFlowService';
 import { upstreamFlowService } from '../services/UpstreamFlowService';
 
 interface UpstreamConditionsProps {
@@ -114,15 +114,49 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
 
             {/* Upstream Dams */}
             <div className="space-y-2">
-                <DamCard
-                    dam={data.chiefJoseph}
-                    timeToImpact={upstreamFlowService.getTimeToImpact('CJO')}
-                    isPrimary={true}
-                />
-                <DamCard
-                    dam={data.grandCoulee}
-                    timeToImpact={upstreamFlowService.getTimeToImpact('GCL')}
-                />
+                {/* Show Rock Island if available (closest upstream) */}
+                {data.rockIsland.available && (
+                    <DamCard
+                        dam={data.rockIsland}
+                        timeToImpact={upstreamFlowService.getTimeToImpact('RIS')}
+                        isPrimary={true}
+                    />
+                )}
+                
+                {/* Show Rocky Reach if available (next closest upstream) */}
+                {data.rockyReach.available && (
+                    <DamCard
+                        dam={data.rockyReach}
+                        timeToImpact={upstreamFlowService.getTimeToImpact('RRH')}
+                        isPrimary={!data.rockIsland.available}
+                    />
+                )}
+                
+                {/* Show Wells if available (next closest) */}
+                {data.wells.available && (
+                    <DamCard
+                        dam={data.wells}
+                        timeToImpact={upstreamFlowService.getTimeToImpact('WEL')}
+                        isPrimary={!data.rockIsland.available && !data.rockyReach.available}
+                    />
+                )}
+                
+                {/* Show Chief Joseph when it's the primary source OR as supplementary if closer dams are available */}
+                {data.chiefJoseph.available && (
+                    <DamCard
+                        dam={data.chiefJoseph}
+                        timeToImpact={upstreamFlowService.getTimeToImpact('CJO')}
+                        isPrimary={!data.rockIsland.available && !data.rockyReach.available && !data.wells.available}
+                    />
+                )}
+                
+                {/* Show Grand Coulee as supplementary for long-term trends */}
+                {data.grandCoulee.available && (
+                    <DamCard
+                        dam={data.grandCoulee}
+                        timeToImpact={upstreamFlowService.getTimeToImpact('GCL')}
+                    />
+                )}
             </div>
         </div>
     );
@@ -130,7 +164,7 @@ export const UpstreamConditions: React.FC<UpstreamConditionsProps> = ({ data, lo
 
 // Helper component for individual dam display
 const DamCard: React.FC<{
-    dam: any;
+    dam: DamData;
     timeToImpact: string;
     isPrimary?: boolean;
 }> = ({ dam, timeToImpact, isPrimary = false }) => {

@@ -31,6 +31,8 @@ export interface DamData {
 }
 
 export interface UpstreamData {
+    rockyReach: DamData;
+    wells: DamData;
     chiefJoseph: DamData;
     grandCoulee: DamData;
     rockIsland: DamData;
@@ -123,20 +125,58 @@ class UpstreamFlowService {
 
     /**
      * Generate prediction based on upstream conditions
+     * Prioritizes closer dams (Rock Island, Rocky Reach, Wells) over distant ones (Chief Joseph, Grand Coulee)
      */
     generatePrediction(upstreamData: UpstreamData): PredictionData {
         const flowBalance = this.calculateFlowBalance(upstreamData.wanapum, upstreamData.rockIsland);
         const reasons: string[] = [];
 
-        // Factor in Chief Joseph trend (most important for short-term)
-        const cjoTrend = upstreamData.chiefJoseph.trend?.direction || 'stable';
-        if (cjoTrend === 'increasing') {
-            reasons.push('Chief Joseph Dam releases increasing');
-        } else if (cjoTrend === 'decreasing') {
-            reasons.push('Chief Joseph Dam releases decreasing');
+        // Prioritize closer dams for short-term predictions
+        // Rock Island is directly upstream (~1-2 hour impact)
+        // Rocky Reach is next upstream (~2-4 hour impact)
+        // Wells is next (~4-8 hour impact)
+        // Chief Joseph is further (~6-12 hour impact)
+        
+        let primaryDam = null;
+        let primaryDamName = '';
+        
+        // Try Rock Island first (closest, best for 1-2 hour prediction)
+        if (upstreamData.rockIsland.available && upstreamData.rockIsland.trend) {
+            primaryDam = upstreamData.rockIsland;
+            primaryDamName = 'Rock Island';
+        }
+        // Try Rocky Reach next (good for 2-6 hour prediction)
+        else if (upstreamData.rockyReach.available && upstreamData.rockyReach.trend) {
+            primaryDam = upstreamData.rockyReach;
+            primaryDamName = 'Rocky Reach';
+        }
+        // Try Wells next (good for 4-8 hour prediction)
+        else if (upstreamData.wells.available && upstreamData.wells.trend) {
+            primaryDam = upstreamData.wells;
+            primaryDamName = 'Wells';
+        }
+        // Fall back to Chief Joseph (6-12 hour prediction)
+        else if (upstreamData.chiefJoseph.available && upstreamData.chiefJoseph.trend) {
+            primaryDam = upstreamData.chiefJoseph;
+            primaryDamName = 'Chief Joseph';
+        }
+        // Finally Grand Coulee (12+ hour prediction)
+        else if (upstreamData.grandCoulee.available && upstreamData.grandCoulee.trend) {
+            primaryDam = upstreamData.grandCoulee;
+            primaryDamName = 'Grand Coulee';
         }
 
-        // Factor in current flow balance
+        // Add trend information from the primary dam
+        if (primaryDam) {
+            const trend = primaryDam.trend?.direction || 'stable';
+            if (trend === 'increasing') {
+                reasons.push(`${primaryDamName} Dam releases increasing`);
+            } else if (trend === 'decreasing') {
+                reasons.push(`${primaryDamName} Dam releases decreasing`);
+            }
+        }
+
+        // Factor in current flow balance at Wanapum
         if (flowBalance.netFlow > 1000) {
             reasons.push(`Wanapum inflow exceeds outflow by ${Math.round(flowBalance.netFlow).toLocaleString()} cfs`);
         } else if (flowBalance.netFlow < -1000) {
@@ -171,16 +211,25 @@ class UpstreamFlowService {
 
     /**
      * Get time-to-impact estimate for upstream releases
-     * Chief Joseph is ~15 miles upstream, water travels ~2-3 mph in Columbia River
+     * Water travels approximately 2-3 mph in the Columbia River
+     * Rock Island: ~5 miles upstream (directly upstream)
+     * Rocky Reach: ~20 miles upstream
+     * Wells: ~35 miles upstream  
+     * Chief Joseph: ~50 miles upstream
+     * Grand Coulee: ~100 miles upstream
      */
     getTimeToImpact(damCode: string): string {
         switch (damCode) {
+            case 'RIS':
+                return '1-2 hours';
+            case 'RRH':
+                return '2-4 hours';
+            case 'WEL':
+                return '4-8 hours';
             case 'CJO':
-                return '4-6 hours';
+                return '6-12 hours';
             case 'GCL':
                 return '24-36 hours';
-            case 'RIS':
-                return 'Downstream';
             default:
                 return 'Unknown';
         }

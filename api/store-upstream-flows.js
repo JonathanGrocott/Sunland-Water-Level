@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Cron job to store upstream flow data hourly
+// Cron job to store upstream flow data daily
 export default async function handler(req, res) {
     // Only allow POST requests (for security, can be called by cron)
     if (req.method !== 'POST' && req.method !== 'GET') {
@@ -17,10 +17,15 @@ export default async function handler(req, res) {
 
         // Define the timeseries we want to fetch
         const timeseries = [
+            'RRH.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+            'RRH.Flow-In.Ave.1Hour.1Hour.CBT-REV',
+            'WEL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+            'WEL.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'CJO.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
             'CJO.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'GCL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
             'RIS.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+            'RIS.Flow-In.Ave.1Hour.1Hour.CBT-REV',
             'WAN.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
             'WAN.Flow-In.Ave.1Hour.1Hour.CBT-REV',
         ];
@@ -45,6 +50,8 @@ export default async function handler(req, res) {
 
         // Process each dam's data
         const dams = [
+            { code: 'RRH', name: 'ROCKY_REACH' },
+            { code: 'WEL', name: 'WELLS' },
             { code: 'CJO', name: 'CHIEF_JOSEPH' },
             { code: 'GCL', name: 'GRAND_COULEE' },
             { code: 'RIS', name: 'ROCK_ISLAND' },
