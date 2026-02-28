@@ -1,3 +1,5 @@
+import { fetchUsaceJson } from './_lib/usace-client.js';
+
 // API endpoint to fetch current upstream dam data from USACE
 export default async function handler(req, res) {
     // Set CORS headers
@@ -46,13 +48,7 @@ export default async function handler(req, res) {
         usaceUrl.searchParams.set('backward', '7d');
         usaceUrl.searchParams.set('query', JSON.stringify(timeseries));
 
-        const response = await fetch(usaceUrl.toString());
-
-        if (!response.ok) {
-            throw new Error(`USACE API responded with status ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await fetchUsaceJson(usaceUrl.toString());
 
         // Parse and structure the data
         const result = {
@@ -71,7 +67,8 @@ export default async function handler(req, res) {
         console.error('Error fetching upstream dam data:', error);
         return res.status(500).json({
             error: 'Failed to fetch upstream dam data',
-            message: error.message || 'Unknown error'
+            message: error.message || 'Unknown error',
+            code: error?.cause?.code || error?.code || null
         });
     }
 }

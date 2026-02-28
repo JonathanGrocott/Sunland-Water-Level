@@ -1,3 +1,5 @@
+import { fetchUsaceJson } from './_lib/usace-client.js';
+
 export default async function handler(req, res) {
     // Only allow GET requests
     if (req.method !== 'GET') {
@@ -17,14 +19,7 @@ export default async function handler(req, res) {
         usaceUrl.searchParams.set('backward', backward);
         usaceUrl.searchParams.set('query', query);
 
-        // Fetch from USACE API
-        const response = await fetch(usaceUrl.toString());
-
-        if (!response.ok) {
-            throw new Error(`USACE API responded with status ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await fetchUsaceJson(usaceUrl.toString());
 
         // Set CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,7 +31,8 @@ export default async function handler(req, res) {
         console.error('Error proxying USACE API:', error);
         return res.status(500).json({
             error: 'Failed to fetch water level data',
-            message: error.message || 'Unknown error'
+            message: error.message || 'Unknown error',
+            code: error?.cause?.code || error?.code || null
         });
     }
 }
