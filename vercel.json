@@ -6,15 +6,5 @@
             "source": "/api/:path*",
             "destination": "/api/:path*"
         }
-    ],
-    "crons": [
-        {
-            "path": "/api/store-reading",
-            "schedule": "0 0 * * *"
-        },
-        {
-            "path": "/api/store-upstream-flows",
-            "schedule": "0 0 * * *"
-        }
     ]
 }

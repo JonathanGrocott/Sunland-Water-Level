@@ -15,7 +15,7 @@ A beautiful, real-time water level tracker for the Columbia River at Sunland (Wa
 - 📊 **Yearly Statistics** - Rolling 365-day high, low, and average water levels
 - 🎯 **Visual Reference Bands** - Chart overlays showing yearly high, low, and average for context
 - 🔄 **Flow Trend Indicator** - Real-time rising/falling/stable status with rate of change
-- 📉 **All-Time Records** - Historical high/low water levels since tracking began
+- 📉 **Historical Context** - Monthly and yearly high/low/average derived from USACE history
 - 🌅 **Beautiful Sun Theme** - Stunning gradient background with animations
 - 📱 **Mobile Responsive** - Perfect on any device
 - ♻️ **Auto-Refresh** - Updates every 5 minutes
@@ -31,7 +31,7 @@ Visit the live site: [https://sunland-water-level.vercel.app/](https://sunland-w
 - **Styling**: Tailwind CSS v4
 - **Charts**: Recharts
 - **Backend**: Vercel Serverless Functions
-- **Database**: Supabase (PostgreSQL)
+- **Database**: None (DB-free mode)
 - **Deployment**: Vercel (free tier)
 
 ## Local Development
@@ -53,21 +53,16 @@ cd Sunland-Water-Level
 npm install
 ```
 
-3. Create a `.env` file (see `.env.example` for all required variables):
-```bash
-cp .env.example .env
-```
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 npm run dev
 ```
 
-5. Open http://localhost:5174 in your browser
+4. Open http://localhost:5174 in your browser
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Vercel with Supabase.
+Deploy directly to Vercel. No database setup is required in DB-free mode.
 
 ## How It Works
 
@@ -98,23 +93,11 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
    - Shows estimated level change over next 6-12 hours
    - Displays confidence level based on data quality
 
-4. **Historical Records**:
-   - Cron job runs daily at midnight UTC
-   - Fetches last 24h of data and calculates min/max/avg
-   - Stores in Supabase `daily_stats` table
-   - Frontend displays all-time high/low records
-   
-5. **Upstream Flow Storage**:
-   - Cron job runs daily at midnight UTC
-   - Collects flow data from upstream dams
-   - Stores in Supabase `upstream_flows` table
-   - Builds dataset for pattern analysis
-
-6. **Yearly Statistics**:
-   - `yearly_stats` view calculates rolling 365-day statistics
-   - Automatically updates as new daily data is added
-   - Provides context through visual reference bands on charts
-   - Shows yearly high, low, average, and range
+4. **Historical Statistics (DB-Free)**:
+   - Frontend fetches additional USACE history windows as needed
+   - Monthly stats are computed from the last 30 days of hourly readings
+   - Yearly stats are computed from the last 365 days of hourly readings
+   - Visual reference bands are rendered from these computed values
 
 
 ### File Structure
@@ -123,37 +106,28 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
 Sunland-Water-Level/
 ├── api/                    # Vercel serverless functions
 │   ├── usace.js           # Proxy for USACE API
-│   ├── store-reading.js   # Daily data collection cron
-│   ├── upstream-dams.js   # Upstream flow data API (NEW)
-│   └── store-upstream-flows.js  # Hourly upstream flow collection (NEW)
+│   └── upstream-dams.js   # Upstream flow data API
 ├── src/
 │   ├── components/        # React components
 │   │   ├── SunBackground.tsx
 │   │   ├── CurrentLevel.tsx
 │   │   ├── LevelChart.tsx
 │   │   ├── MinMaxRecords.tsx
-│   │   └── UpstreamConditions.tsx  # Upstream flow display (NEW)
+│   │   └── UpstreamConditions.tsx
 │   ├── services/          # Service layer
 │   │   ├── WaterLevelService.ts
-│   │   ├── DatabaseService.ts
-│   │   └── UpstreamFlowService.ts  # Upstream flow logic (NEW)
+│   │   ├── HistoricalStatsService.ts
+│   │   └── UpstreamFlowService.ts
+│   ├── types/
+│   │   └── HistoricalStats.ts
 │   └── App.tsx           # Main application
-├── supabase-schema.sql   # Database schema
-├── supabase-upstream-schema.sql  # Upstream flows schema (NEW)
 ├── vercel.json           # Vercel configuration
-├── DEPLOYMENT.md         # Deployment guide
-├── UPSTREAM_FLOWS_MIGRATION.md  # Upstream flows setup guide (NEW)
-└── YEARLY_STATS_MIGRATION.md  # Yearly stats setup guide
+└── DEPLOYMENT.md         # Deployment guide
 ```
 
 ## Environment Variables
 
-Required environment variables (see `.env.example`):
-
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
-- `SUPABASE_URL` - Same as above (for serverless functions)
-- `SUPABASE_SERVICE_KEY` - Supabase service role key (admin access)
+No environment variables are required for DB-free mode.
 
 ## Contributing
 

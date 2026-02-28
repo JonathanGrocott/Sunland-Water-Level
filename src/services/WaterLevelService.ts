@@ -71,7 +71,8 @@ class USACEWaterLevelService implements IWaterLevelService {
     }
 
     async getHistory(hours: number = 24): Promise<WaterLevelData[]> {
-        const allData = await this.fetchData(2); // Fetch 2 days to be safe
+        const daysToFetch = Math.max(1, Math.ceil(hours / 24) + 1);
+        const allData = await this.fetchData(daysToFetch);
         const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
 
         return allData.filter(d => new Date(d.timestamp) > cutoff);

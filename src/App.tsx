@@ -6,12 +6,14 @@ import { LevelChart } from './components/LevelChart';
 import { MinMaxRecords } from './components/MinMaxRecords';
 import { UpstreamConditions } from './components/UpstreamConditions';
 import { waterLevelService } from './services/WaterLevelService';
-import { databaseService } from './services/DatabaseService';
 import { upstreamFlowService } from './services/UpstreamFlowService';
+import { calculateMonthlyStats, calculateYearlyStats } from './services/HistoricalStatsService';
 import type { CurrentCondition, WaterLevelData } from './services/WaterLevelService';
-import type { AllTimeRecords, YearlyStats, MonthlyStats } from './services/DatabaseService';
+import type { AllTimeRecords, YearlyStats, MonthlyStats } from './types/HistoricalStats';
 import type { UpstreamData } from './services/UpstreamFlowService';
 import { RefreshCw } from 'lucide-react';
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 function App() {
   const [currentCondition, setCurrentCondition] = useState<CurrentCondition | null>(null);
@@ -50,14 +52,15 @@ function App() {
   const fetchRecords = async () => {
     setRecordsLoading(true);
     try {
-      const [allTimeRecords, yearlyData, monthlyData] = await Promise.all([
-        databaseService.getAllTimeRecords(),
-        databaseService.getYearlyStats(),
-        databaseService.getMonthlyStats()
-      ]);
-      setRecords(allTimeRecords);
-      setYearlyStats(yearlyData);
-      setMonthlyStats(monthlyData);
+      const yearlyHistory = await waterLevelService.getHistory(24 * 365);
+      const monthlyCutoff = Date.now() - THIRTY_DAYS_MS;
+      const monthlyHistory = yearlyHistory.filter(
+        point => new Date(point.timestamp).getTime() > monthlyCutoff
+      );
+
+      setMonthlyStats(calculateMonthlyStats(monthlyHistory));
+      setYearlyStats(calculateYearlyStats(yearlyHistory));
+      setRecords(null);
     } catch (error) {
       console.error("Failed to fetch records", error);
     } finally {

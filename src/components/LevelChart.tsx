@@ -2,7 +2,7 @@ import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format } from 'date-fns';
 import type { WaterLevelData } from '../services/WaterLevelService';
-import type { YearlyStats, MonthlyStats } from '../services/DatabaseService';
+import type { YearlyStats, MonthlyStats } from '../types/HistoricalStats';
 
 interface LevelChartProps {
     data: WaterLevelData[];

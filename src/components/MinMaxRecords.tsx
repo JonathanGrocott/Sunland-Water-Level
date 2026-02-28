@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import type { AllTimeRecords, YearlyStats } from '../services/DatabaseService';
+import type { AllTimeRecords, YearlyStats } from '../types/HistoricalStats';
 
 interface MinMaxRecordsProps {
     records: AllTimeRecords | null;
@@ -23,7 +23,7 @@ export function MinMaxRecords({ records, yearlyStats, loading }: MinMaxRecordsPr
         );
     }
 
-    if (!records || (!records.allTimeHigh && !records.allTimeLow)) {
+    if ((!records || (!records.allTimeHigh && !records.allTimeLow)) && !yearlyStats) {
         return (
             <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 shadow-2xl">
                 <h2 className="text-lg font-semibold text-yellow-100/80 mb-4 text-center">

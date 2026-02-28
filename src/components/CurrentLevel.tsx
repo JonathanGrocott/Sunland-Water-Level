@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUp, ArrowDown, Minus, AlertTriangle } from 'lucide-react';
 import type { CurrentCondition } from '../services/WaterLevelService';
-import type { YearlyStats, MonthlyStats } from '../services/DatabaseService';
+import type { YearlyStats, MonthlyStats } from '../types/HistoricalStats';
 
 // Rate of change thresholds (feet per hour)
 const RATE_VERY_FAST_THRESHOLD = 0.4;
