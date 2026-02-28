@@ -57,18 +57,149 @@ export interface PredictionData {
 
 class UpstreamFlowService {
     private readonly API_URL = '/api/upstream-dams';
+    private readonly USACE_PROXY_URL = '/api/usace';
 
     // Wanapum Reservoir surface area at normal pool elevation (approximate)
     private readonly WANAPUM_SURFACE_AREA_ACRES = 15000;
     private readonly SQ_FT_PER_ACRE = 43560;
-
+    private readonly TIMESERIES = [
+        'RRH.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+        'RRH.Flow-In.Ave.1Hour.1Hour.CBT-REV',
+        'WEL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+        'WEL.Flow-In.Ave.1Hour.1Hour.CBT-REV',
+        'CJO.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+        'CJO.Flow-In.Ave.1Hour.1Hour.CBT-REV',
+        'GCL.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+        'RIS.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+        'RIS.Flow-In.Ave.1Hour.1Hour.CBT-REV',
+        'WAN.Flow-Out.Ave.1Hour.1Hour.CBT-REV',
+        'WAN.Flow-In.Ave.1Hour.1Hour.CBT-REV'
+    ];
     async getUpstreamData(): Promise<UpstreamData> {
         try {
             const response = await axios.get<UpstreamData>(this.API_URL);
-            return response.data;
+            const data = response.data;
+
+            if (!this.isValidUpstreamData(data)) {
+                return await this.fetchViaUsaceProxy();
+            }
+
+            return data;
         } catch (error) {
             console.error('Error fetching upstream data:', error);
-            throw error;
+            return await this.fetchViaUsaceProxy();
+        }
+    }
+
+    private isValidUpstreamData(data: unknown): data is UpstreamData {
+        if (!data || typeof data !== 'object') return false;
+
+        const requiredKeys: Array<keyof UpstreamData> = [
+            'rockyReach',
+            'wells',
+            'chiefJoseph',
+            'grandCoulee',
+            'rockIsland',
+            'wanapum',
+            'fetchedAt'
+        ];
+
+        return requiredKeys.every(key => key in data);
+    }
+
+    private async fetchViaUsaceProxy(): Promise<UpstreamData> {
+        const params = new URLSearchParams({
+            timezone: 'PST',
+            backward: '7d',
+            query: JSON.stringify(this.TIMESERIES)
+        });
+
+        const response = await axios.get<Record<string, {
+            timeseries?: Record<string, { values?: [string, number, number][] }>;
+        }>>(`${this.USACE_PROXY_URL}?${params.toString()}`);
+
+        return {
+            rockyReach: this.extractDamData(response.data, 'RRH', 'Rocky Reach'),
+            wells: this.extractDamData(response.data, 'WEL', 'Wells'),
+            chiefJoseph: this.extractDamData(response.data, 'CJO', 'Chief Joseph'),
+            grandCoulee: this.extractDamData(response.data, 'GCL', 'Grand Coulee'),
+            rockIsland: this.extractDamData(response.data, 'RIS', 'Rock Island'),
+            wanapum: this.extractDamData(response.data, 'WAN', 'Wanapum'),
+            fetchedAt: new Date().toISOString()
+        };
+    }
+
+    private extractDamData(
+        data: Record<string, { timeseries?: Record<string, { values?: [string, number, number][] }> }>,
+        locationCode: string,
+        damName: string
+    ): DamData {
+        const locationData = data[locationCode];
+
+        if (!locationData || !locationData.timeseries) {
+            return {
+                name: damName,
+                code: locationCode,
+                available: false,
+                error: 'No data available'
+            };
+        }
+
+        try {
+            const outflowKey = `${locationCode}.Flow-Out.Ave.1Hour.1Hour.CBT-REV`;
+            const inflowKey = `${locationCode}.Flow-In.Ave.1Hour.1Hour.CBT-REV`;
+            const outflowValues = locationData.timeseries[outflowKey]?.values || [];
+            const inflowValues = locationData.timeseries[inflowKey]?.values || [];
+
+            const currentOutflow = outflowValues.length > 0 ? outflowValues[outflowValues.length - 1] : null;
+            const currentInflow = inflowValues.length > 0 ? inflowValues[inflowValues.length - 1] : null;
+
+            const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+            const oldOutflow = outflowValues.find(([timestamp]) => new Date(timestamp) <= sixHoursAgo);
+
+            let trend = 0;
+            let trendDirection: 'increasing' | 'decreasing' | 'stable' = 'stable';
+            if (currentOutflow && oldOutflow && oldOutflow[1] !== 0) {
+                const oldValue = oldOutflow[1];
+                const newValue = currentOutflow[1];
+                trend = ((newValue - oldValue) / oldValue) * 100;
+
+                if (trend > 5) trendDirection = 'increasing';
+                else if (trend < -5) trendDirection = 'decreasing';
+            }
+
+            return {
+                name: damName,
+                code: locationCode,
+                available: true,
+                current: {
+                    outflow: currentOutflow ? {
+                        value: currentOutflow[1],
+                        timestamp: currentOutflow[0],
+                        unit: 'cfs'
+                    } : null,
+                    inflow: currentInflow ? {
+                        value: currentInflow[1],
+                        timestamp: currentInflow[0],
+                        unit: 'cfs'
+                    } : null
+                },
+                trend: {
+                    percentChange: trend,
+                    direction: trendDirection
+                },
+                history: {
+                    outflow: outflowValues.slice(-48),
+                    inflow: inflowValues.slice(-48)
+                }
+            };
+        } catch (error) {
+            return {
+                name: damName,
+                code: locationCode,
+                available: false,
+                error: error instanceof Error ? error.message : 'Unknown parsing error'
+            };
         }
     }
 

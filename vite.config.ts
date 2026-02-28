@@ -11,9 +11,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/usace': {
-        target: 'https://www.nwd-wc.usace.army.mil/dd/common/web_service/webexec/getjson',
+        target: 'https://www.nwd-wc.usace.army.mil',
         changeOrigin: true,
-        rewrite: () => '',
+        rewrite: (path) => path.replace(/^\/api\/usace/, '/dd/common/web_service/webexec/getjson'),
         secure: false,
       },
     },
